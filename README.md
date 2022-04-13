@@ -1,1 +1,1 @@
-# Attendance-management-Using-Face-Recognition
+# Atendance-system-using-Face-Recognition
