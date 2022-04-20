@@ -1,0 +1,28 @@
+Attendance System DB : 
+
+CREATE DATABASE ATTENDANCE_SYSTEM;
+SHOW DATABASES;
+
+USE ATTENDANCE_SYSTEM;
+
+SHOW TABLES;
+
+select * from students_info;
+
+INSERT INTO students_info (student_name) VALUE ("Rohan Padhye");
+INSERT INTO students_info (student_name) VALUE ("Raghuttam Parvatikar");
+INSERT INTO students_info (student_name) VALUE ("Omkar Pawar");
+
+
+CREATE TABLE `attendance_system`.`students_info` (
+  `student_id` INT NOT NULL AUTO_INCREMENT,
+  `student_name` VARCHAR(45) NULL,
+  PRIMARY KEY (`student_id`));
+
+CREATE TABLE `attendance_system`.`subject_1` (
+  `student_id` INT NOT NULL,
+  `time` CHAR(20) NULL,
+  `date` DATE NULL);
+
+
+
