@@ -11,7 +11,7 @@ from PIL import Image, ImageDraw
 from IPython.display import display
 from datetime import datetime
 import mysql.connector
-
+import ctypes
 
 
 
@@ -74,12 +74,27 @@ cnx = mysql.connector.connect(user='root', password='123!@QWE',
                               host='127.0.0.1',
                               database='ATTENDANCE_SYSTEM')
 
-present_students=['Hey']
 
-def markAttendance(name):  
-    if name not in present_students:
-        present_students.append(name)
+
+
+
+# def markAttendance(name):  
+#     if name not in present_students:
+#         st.write(name)
+#         st.write(present_students[0])
+#         present_students.append(name)
+#         st.write(present_students[len(present_students)-1]+' here')
+        
+        
+        
+        
+# def jusGeteVal():
+    # return present_students
+        
+        
+        
 if nav == "Attendance":
+    
     st.title("Attendance")
     run = st.checkbox('Run',value=True)
     FRAME_WINDOW = st.image([]) 
@@ -117,7 +132,12 @@ if nav == "Attendance":
                 best_match_index = np.argmin(face_distances)
                 if matches[best_match_index]:
                     name = known_face_names[best_match_index]
-                    
+                    # markAttendance(name)
+                    present_students=[]
+                    if name not in present_students:
+                        # st.write(name)
+                        # st.write(present_students[0])
+                        present_students.append(name)
                 
                 face_names.append(name)
 
@@ -147,15 +167,15 @@ if nav == "Attendance":
         # if cv2.waitKey(1) & 0xFF == ord('q'):
         #     break
         FRAME_WINDOW.image(frame)
-        if name not in present_students:
-            present_students.append(name)
-        markAttendance(name)
-        present_students.append(name)
+        
 
-        
+
+    
     else:
-        
         st.write('Stopped')
+        
+
+
 
     # try:
     #     connection = mysql.connector.connect(
