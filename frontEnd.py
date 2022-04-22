@@ -1,3 +1,4 @@
+from fileinput import filename
 from multiprocessing import connection
 import streamlit as st
 import face_recognition
@@ -14,27 +15,24 @@ import mysql.connector
 import ctypes
 
 
-
-
-
 # Load a second sample picture and learn how to recognize it.
 rohan_image = face_recognition.load_image_file("Students/rohan.jpg")
 rohan_face_encoding = face_recognition.face_encodings(rohan_image)[0]
 
-# Load a second sample picture and learn how to recognize it.
+
 raghu_image = face_recognition.load_image_file("Students/raghu.png")
 raghu_face_encoding = face_recognition.face_encodings(raghu_image)[0]
 
 
-# Load a second sample picture and learn how to recognize it.
+
 omkar_image = face_recognition.load_image_file("Students/omkar2.jpeg")
 omkar_face_encoding = face_recognition.face_encodings(omkar_image)[0]
 
-# Load a second sample picture and learn how to recognize it.
+
 adarsh_image = face_recognition.load_image_file("Students/adarsh.png")
 adarsh_face_encoding = face_recognition.face_encodings(adarsh_image)[0]
 
-# Load a second sample picture and learn how to recognize it.
+
 vishnu_image = face_recognition.load_image_file("Students/vishnu.png")
 vishnu_face_encoding = face_recognition.face_encodings(vishnu_image)[0]
 
@@ -60,48 +58,76 @@ known_face_names = [
 
 ]
 
-# Initialize some variables
-face_locations = []
-face_encodings = []
-face_names = []
-process_this_frame = True
 
 
 
 nav = st.sidebar.radio("Navigation", ["Attendance", "Management System", "About Us"])
 
-cnx = mysql.connector.connect(user='root', password='123!@QWE',
-                              host='127.0.0.1',
-                              database='ATTENDANCE_SYSTEM')
+
+
+att=[]
+header = ['Name', 'Time']
+now=datetime.now()
+fileName = now.strftime('%H:%M:%S')
+with open(fileName+'.csv', 'w', encoding='UTF8', newline='') as f:
+    writer = csv.writer(f)
+    # write the header
+    writer.writerow(header)
 
 
 
 
+def markAttendance(name):    
+    global fileName
+    with open(fileName+'.csv','+r') as f:
+        myDataList= f.readlines()
+        nameList=[]
+        for lines in myDataList: 
+            entry=lines.split(',')
+            nameList.append(entry[0])
+        if name not in nameList:
+            now=datetime.now()
+            dtString = now.strftime('%H:%M:%S')
+            f.writelines(f'\n{name},{dtString}')
+            att.append(name)
 
-# def markAttendance(name):  
-#     if name not in present_students:
-#         st.write(name)
-#         st.write(present_students[0])
-#         present_students.append(name)
-#         st.write(present_students[len(present_students)-1]+' here')
-        
-        
-        
-        
-# def jusGeteVal():
-    # return present_students
-        
-        
-        
-if nav == "Attendance":
+
+
+
+def startVideo():
     
-    st.title("Attendance")
+    mydb = mysql.connector.connect(
+        host="127.0.0.1",
+        user="root",
+        password="123!@QWE",
+        database="ATTENDANCE_SYSTEM" 
+    )
+
+    now = datetime.now()
+    today = datetime.today()
+
+    # dd/mm/YY
+    Date = today.strftime("%d/%m/%Y")
+    Time= now.strftime("%H:%M:%S")
+    mycursor = mydb.cursor()
+ 
+    mycursor.execute("SELECT * FROM AI_DS;")
+    myresult = mycursor.fetchall()
+    for x in myresult:
+        print(x)
+    
+    
+    # Initialize some variables
+    face_locations = []
+    face_encodings = []
+    face_names = []
+    process_this_frame = True
+
     run = st.checkbox('Run',value=True)
     FRAME_WINDOW = st.image([]) 
     cam = cv2.VideoCapture(0)
+    att=[]
     #creating a list for Storing present students list
-
-    
     while run:
         ret, frame = cam.read()
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -126,19 +152,16 @@ if nav == "Attendance":
                 # if True in matches:
                 #     first_match_index = matches.index(True)
                 #     name = known_face_names[first_match_index]
-
                 # Or instead, use the known face with the smallest distance to the new face
                 face_distances = face_recognition.face_distance(known_face_encodings, face_encoding)
                 best_match_index = np.argmin(face_distances)
                 if matches[best_match_index]:
                     name = known_face_names[best_match_index]
-                    # markAttendance(name)
-                    present_students=[]
-                    if name not in present_students:
-                        # st.write(name)
-                        # st.write(present_students[0])
-                        present_students.append(name)
-                
+                    if name not in att:
+                        att.append(name)
+                        markAttendance(name)
+                        mycursor.execute('INSERT INTO AI_DS VALUES ("' +name+ '","' +Date+ '","'+ Time+'");')
+                        mydb.commit()
                 face_names.append(name)
 
         process_this_frame = not process_this_frame
@@ -167,32 +190,15 @@ if nav == "Attendance":
         # if cv2.waitKey(1) & 0xFF == ord('q'):
         #     break
         FRAME_WINDOW.image(frame)
-        
-
-
-    
     else:
+        mydb.close()
         st.write('Stopped')
-        
-
-
-
-    # try:
-    #     connection = mysql.connector.connect(
-    #         host="localhost", database="Attendance", user="root", password="root",
-    #     )
-
-    #     if connection.isConnected():
-    #         info = connection.get_server_info()
-    #         st.write("CONNECTED!")
-    #         cursor = connection.cursor()
-    #         cursor.execute("select database();")
-    #         record = cursor.fetchone()
-    #         st.write("You're connected to database: ", record)
-
-    # except Error as e:
-    #     st.write("Error while connecting to MySQL", e)
-
+        text_contents = '''CSV CONTENT'''
+        st.download_button('Download CSV', text_contents)
+if nav == "Attendance":
+    st.title("Attendance")
+    startVideo()
+    
 
 if nav == "Management System":
     st.title("Management System")
